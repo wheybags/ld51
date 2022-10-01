@@ -28,16 +28,20 @@ namespace ld51
         public Direction toolDirection = Direction.Up;
 
         public List<Item> items = new List<Item>();
+        public Dictionary<Point, Item> itemsByPos = new Dictionary<Point, Item>();
 
 
         InputHandler inputHandler = new InputHandler();
+        long tick = 0;
 
 
         public GameState(Tilemap level)
         {
             this.level = level;
 
-            items.Add(new Item());
+            addItem(new Point(0,0));
+            addItem(new Point(1,0));
+            addItem(new Point(2,0));
         }
 
         private bool isFactoryPart(Point p)
@@ -179,8 +183,81 @@ namespace ld51
             if (inputHandler.downThisFrame(Input.SelectFactory))
                 this.tool = Tool.Factory;
 
+            this.updateBeltItems();
+
+            this.tick++;
+        }
+
+        private void addItem(Point pos)
+        {
+            Item item = new Item(pos);
+            this.itemsByPos.Add(pos, item);
+            this.items.Add(item);
+        }
+
+        int ticksSinceLastItemUpdate = 0;
+        private void updateBeltItems()
+        {
+            if (ticksSinceLastItemUpdate > Constants.updatesPerSecond / Constants.itemMoveSpeedRealTilesPerSecond)
+            {
+                foreach(Item item in this.items)
+                    recursiveUpdateItem(item);
+
+                ticksSinceLastItemUpdate = 0;
+            }
+            else
+            {
+                ticksSinceLastItemUpdate++;
+            }
+
             foreach (Item item in this.items)
-                item.update(this);
+                item.visualUpdate(this);
+        }
+
+        private bool recursiveUpdateItem(Item item)
+        {
+            if (item.lastTouchedTick == this.tick)
+                return false;
+
+            item.lastTouchedTick = this.tick;
+
+            Tile* tile = this.level.get(item.position);
+
+            Point movement = new Point();
+            switch (tile->tileId)
+            {
+                case Constants.beltRight:
+                    movement = new Point(1, 0);
+                    break;
+                case Constants.beltDown:
+                    movement = new Point(0, 1);
+                    break;
+                case Constants.beltLeft:
+                    movement = new Point(-1, 0);
+                    break;
+                case Constants.beltUp:
+                    movement = new Point(0, -1);
+                    break;
+            }
+
+            if (movement == Point.Zero)
+                return false;
+
+            Point destination = item.position + movement;
+
+            if (!this.level.isPointValid(destination))
+                return false;
+
+            this.itemsByPos.TryGetValue(destination, out Item blockedByItem);
+
+            if (blockedByItem != null && !recursiveUpdateItem(blockedByItem))
+                return false;
+
+            itemsByPos.Remove(item.position);
+            item.position += movement;
+            itemsByPos[item.position] = item;
+
+            return true;
         }
     }
 }
