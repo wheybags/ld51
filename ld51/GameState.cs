@@ -17,7 +17,7 @@ namespace ld51
         Right
     }
 
-    public class GameState
+    public unsafe class GameState
     {
         public Tilemap level {get; private set;}
         public Vector2 viewpoint = new Vector2(1, 0);
@@ -68,6 +68,38 @@ namespace ld51
                     case Direction.Left:
                         this.toolDirection = Direction.Up;
                         break;
+                }
+            }
+
+            if (inputHandler.currentState.getInput(Input.ActivateTool))
+            {
+                Point selectedPoint = Render.getSelectedPoint(this);
+                if (this.level.isPointValid(selectedPoint))
+                {
+                    switch (this.tool)
+                    {
+                        case Tool.Belt:
+                        {
+                            int newTile = 0;
+                            switch (this.toolDirection)
+                            {
+                                case Direction.Up:
+                                    newTile = Constants.beltUp;
+                                    break;
+                                case Direction.Right:
+                                    newTile = Constants.beltRight;
+                                    break;
+                                case Direction.Down:
+                                    newTile = Constants.beltDown;
+                                    break;
+                                case Direction.Left:
+                                    newTile = Constants.beltLeft;
+                                    break;
+                            }
+                            this.level.get(selectedPoint)->tileId = newTile;
+                            break;
+                        }
+                    }
                 }
             }
         }

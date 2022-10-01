@@ -11,6 +11,7 @@ namespace ld51
         Left,
         Right,
         RotateTool,
+        ActivateTool,
 
         MAX_INPUT
     }
@@ -30,6 +31,7 @@ namespace ld51
             currentState = new InputState();
             currentState.gamepad = GamePad.GetState(0, GamePadDeadZone.Circular);
             currentState.keyboard = Keyboard.GetState();
+            currentState.mouse = Mouse.GetState();
 
             for (Input i = 0; i < Input.MAX_INPUT; i++)
             {
@@ -74,6 +76,7 @@ namespace ld51
         {
             public GamePadState gamepad;
             public KeyboardState keyboard;
+            public MouseState mouse;
 
             private enum Direction
             {
@@ -124,6 +127,8 @@ namespace ld51
                         return keyboard.IsKeyDown(Keys.D) || keyboard.IsKeyDown(Keys.Right) ||gamepadDirection(Direction.Right);
                     case Input.RotateTool:
                         return keyboard.IsKeyDown(Keys.R);
+                    case Input.ActivateTool:
+                        return mouse.LeftButton == ButtonState.Pressed;
                 }
 
                 Util.ReleaseAssert(false);

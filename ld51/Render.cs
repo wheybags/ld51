@@ -17,12 +17,7 @@ namespace ld51
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointWrap);
 
-
-            Point mousePos_ = Mouse.GetState().Position;
-            Vector2 mousePos = new Vector2(mousePos_.X, mousePos_.Y);
-
-            Vector2 selectedPoint_ = mousePos / (renderScale * Constants.tileSize) - gameState.viewpoint;
-            Point selectedPoint = new Point((int)selectedPoint_.X, (int)selectedPoint_.Y);
+            Point selectedPoint = getSelectedPoint(gameState);
 
             for (int y = 0; y < gameState.level.h; y++)
             {
@@ -64,9 +59,22 @@ namespace ld51
                     break;
             }
 
+            Point mousePos_ = Mouse.GetState().Position;
+            Vector2 mousePos = new Vector2(mousePos_.X, mousePos_.Y);
             renderTileAtPixel(renderScale, toolTile, mousePos, Color.White, toolRot);
 
             spriteBatch.End();
+        }
+
+        public static Point getSelectedPoint(GameState gameState)
+        {
+            Point mousePos_ = Mouse.GetState().Position;
+            Vector2 mousePos = new Vector2(mousePos_.X, mousePos_.Y);
+
+            Vector2 selectedPoint_ = mousePos / (renderScale * Constants.tileSize) - gameState.viewpoint;
+            Point selectedPoint = new Point((int)selectedPoint_.X, (int)selectedPoint_.Y);
+
+            return selectedPoint;
         }
 
         private static Point getCoordsInTileset(int tileId)
