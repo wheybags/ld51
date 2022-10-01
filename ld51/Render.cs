@@ -30,6 +30,14 @@ namespace ld51
                 }
             }
 
+            foreach (Item item in gameState.items)
+            {
+                renderTileAtPixel(renderScale,
+                                  Constants.item,
+                                  (gameState.viewpoint + item.renderPosition) * Constants.tileSize * renderScale,
+                                  Color.White);
+            }
+
             int toolTile = -1;
             switch (gameState.tool)
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace ld51
@@ -25,6 +26,8 @@ namespace ld51
         public Tool tool = Tool.Belt;
         public Direction toolDirection = Direction.Up;
 
+        public List<Item> items = new List<Item>();
+
 
         InputHandler inputHandler = new InputHandler();
 
@@ -32,6 +35,8 @@ namespace ld51
         public GameState(Tilemap level)
         {
             this.level = level;
+
+            items.Add(new Item());
         }
 
         public void update(long gameTimeMs)
@@ -102,6 +107,9 @@ namespace ld51
                     }
                 }
             }
+
+            foreach (Item item in this.items)
+                item.update(this);
         }
     }
 }

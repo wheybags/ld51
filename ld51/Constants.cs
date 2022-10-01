@@ -18,6 +18,13 @@ namespace ld51
         public const int deleteTool = 17;
         public const int beltTool = 18;
 
+        public const int item = 2;
+
+        public const long updatesPerSecond = 60;
+
+        public const float itemMoveSpeedRealTilesPerSecond = 2f;
+        public const float itemMoveSpeedAnimateTilesPerSecond = 3f;
+
         private static string getRootPath() {
             string root = Assembly.GetEntryAssembly()!.Location;
             while (!Directory.Exists(root + "/gfx"))

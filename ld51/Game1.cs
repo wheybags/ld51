@@ -46,7 +46,7 @@ namespace ld51
         {
             long gameTimeMs = Util.getMs(gameTime);
 
-            long updateInterval = 1000 / 60;
+            long updateInterval = 1000 / Constants.updatesPerSecond;
 
             if (gameTimeMs > lastUpdate + updateInterval)
             {
