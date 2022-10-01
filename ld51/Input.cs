@@ -10,6 +10,7 @@ namespace ld51
         Down,
         Left,
         Right,
+        RotateTool,
 
         MAX_INPUT
     }
@@ -121,6 +122,8 @@ namespace ld51
                         return keyboard.IsKeyDown(Keys.A) || keyboard.IsKeyDown(Keys.Left) ||gamepadDirection(Direction.Left);
                     case Input.Right:
                         return keyboard.IsKeyDown(Keys.D) || keyboard.IsKeyDown(Keys.Right) ||gamepadDirection(Direction.Right);
+                    case Input.RotateTool:
+                        return keyboard.IsKeyDown(Keys.R);
                 }
 
                 Util.ReleaseAssert(false);

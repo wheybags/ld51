@@ -50,6 +50,26 @@ namespace ld51
                 movement.Y--;
 
             viewpoint += movement * Render.renderScale * 0.25f;
+
+
+            if (inputHandler.downThisFrame(Input.RotateTool))
+            {
+                switch (this.toolDirection)
+                {
+                    case Direction.Up:
+                        this.toolDirection = Direction.Right;
+                        break;
+                    case Direction.Right:
+                        this.toolDirection = Direction.Down;
+                        break;
+                    case Direction.Down:
+                        this.toolDirection = Direction.Left;
+                        break;
+                    case Direction.Left:
+                        this.toolDirection = Direction.Up;
+                        break;
+                }
+            }
         }
     }
 }

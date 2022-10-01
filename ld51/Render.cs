@@ -7,7 +7,7 @@ namespace ld51
 {
     public static unsafe class Render
     {
-        private static MySpriteBatch spriteBatch = new MySpriteBatch(Game1.game.GraphicsDevice);
+        private static SpriteBatch spriteBatch = new SpriteBatch(Game1.game.GraphicsDevice);
         public static int renderScale = 3;
 
         public static void render(GraphicsDevice GraphicsDevice, GameState gameState)
@@ -23,8 +23,6 @@ namespace ld51
 
             Vector2 selectedPoint_ = mousePos / (renderScale * Constants.tileSize) - gameState.viewpoint;
             Point selectedPoint = new Point((int)selectedPoint_.X, (int)selectedPoint_.Y);
-
-            Console.WriteLine(selectedPoint);
 
             for (int y = 0; y < gameState.level.h; y++)
             {
@@ -48,7 +46,25 @@ namespace ld51
                     break;
             }
             Util.ReleaseAssert(toolTile != -1);
-            renderTileAtPixel(renderScale, toolTile, mousePos, Color.White);
+
+            float toolRot = 0;
+            switch (gameState.toolDirection)
+            {
+                case Direction.Up:
+                    toolRot = 0;
+                    break;
+                case Direction.Right:
+                    toolRot = 90;
+                    break;
+                case Direction.Down:
+                    toolRot = 180;
+                    break;
+                case Direction.Left:
+                    toolRot = 270;
+                    break;
+            }
+
+            renderTileAtPixel(renderScale, toolTile, mousePos, Color.White, toolRot);
 
             spriteBatch.End();
         }
@@ -61,27 +77,24 @@ namespace ld51
             return new Point(tileX, tileY);
         }
 
-        private static void renderTileAtPixel(int scale, int tileId, Vector2 pixelPos, Color color)
+        private static void renderTileAtPixel(int scale, int tileId, Vector2 pixelPos, Color color, float rotationDegrees = 0f)
         {
             Point tilesetCoords = getCoordsInTileset(tileId);
 
-            FloatRectangle target = new FloatRectangle()
+            Rectangle sourceRect = new Rectangle()
             {
-                x = pixelPos.X,
-                y = pixelPos.Y,
-                w = Constants.tileSize * scale,
-                h = Constants.tileSize * scale,
+                X = tilesetCoords.X * Constants.tileSize,
+                Y = tilesetCoords.Y * Constants.tileSize,
+                Width = Constants.tileSize,
+                Height = Constants.tileSize,
             };
-
-            FloatRectangle source = new FloatRectangle()
-            {
-                x = tilesetCoords.X * Constants.tileSize,
-                y = tilesetCoords.Y * Constants.tileSize,
-                w = Constants.tileSize,
-                h = Constants.tileSize,
-            };
-
-            spriteBatch.Draw(Textures.tileset,target, source, color);
+            spriteBatch.Draw(Textures.tileset,
+                             pixelPos + new Vector2(Constants.tileSize/2f, Constants.tileSize/2f) * scale,
+                             sourceRect,
+                             color,
+                             MathHelper.ToRadians(rotationDegrees),
+                             new Vector2(Constants.tileSize/2f, Constants.tileSize/2f),
+                             new Vector2(scale, scale), SpriteEffects.None, 0);
         }
     }
 }
