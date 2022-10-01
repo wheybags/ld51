@@ -13,6 +13,10 @@ namespace ld51
         RotateTool,
         ActivateTool,
 
+        SelectDelete,
+        SelectBelt,
+        SelectFactory,
+
         MAX_INPUT
     }
 
@@ -129,6 +133,12 @@ namespace ld51
                         return keyboard.IsKeyDown(Keys.R);
                     case Input.ActivateTool:
                         return mouse.LeftButton == ButtonState.Pressed;
+                    case Input.SelectDelete:
+                        return keyboard.IsKeyDown(Keys.D1);
+                    case Input.SelectBelt:
+                        return keyboard.IsKeyDown(Keys.D2);
+                    case Input.SelectFactory:
+                        return keyboard.IsKeyDown(Keys.D3);
                 }
 
                 Util.ReleaseAssert(false);

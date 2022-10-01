@@ -23,10 +23,21 @@ namespace ld51
             {
                 for (int x = 0; x < gameState.level.w; x++)
                 {
+                    Color color = Color.White;
+                    Point currentPoint = new Point(x, y);
+                    if (currentPoint == selectedPoint ||
+                        (gameState.tool == Tool.Factory && (currentPoint == selectedPoint + new Point(0,1) ||
+                                                            currentPoint == selectedPoint + new Point(1,0) ||
+                                                            currentPoint == selectedPoint + new Point(1,1)))
+                       )
+                    {
+                        color = Color.Green;
+                    }
+
                     renderTileAtPixel(renderScale,
                                       gameState.level.get(x, y)->tileId,
                                       (gameState.viewpoint + new Vector2(x, y)) * Constants.tileSize * renderScale,
-                                      new Point(x, y) == selectedPoint ? Color.Green : Color.White);
+                                      color);
                 }
             }
 
@@ -45,7 +56,10 @@ namespace ld51
                     toolTile = Constants.beltTool;
                     break;
                 case Tool.Delete:
-                    toolTile = Constants.beltTool;
+                    toolTile = Constants.deleteTool;
+                    break;
+                case Tool.Factory:
+                    toolTile = Constants.factoryTool;
                     break;
             }
             Util.ReleaseAssert(toolTile != -1);

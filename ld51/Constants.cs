@@ -17,6 +17,12 @@ namespace ld51
 
         public const int deleteTool = 17;
         public const int beltTool = 18;
+        public const int factoryTool = 33;
+
+        public const int factoryTopLeft = 19;
+        public const int factoryTopRight = 20;
+        public const int factoryBottomLeft = 35;
+        public const int factoryBottomRight = 36;
 
         public const int item = 2;
 
