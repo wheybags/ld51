@@ -3,10 +3,28 @@ using Microsoft.Xna.Framework;
 
 namespace ld51
 {
+    public enum Tool
+    {
+        Belt,
+        Delete,
+    }
+
+    public enum Direction
+    {
+        Up,
+        Down,
+        Left,
+        Right
+    }
+
     public class GameState
     {
         public Tilemap level {get; private set;}
-        public Vector2 viewpoint {get; private set;}
+        public Vector2 viewpoint = new Vector2(1, 0);
+
+        public Tool tool = Tool.Belt;
+        public Direction toolDirection = Direction.Up;
+
 
         InputHandler inputHandler = new InputHandler();
 
@@ -18,7 +36,7 @@ namespace ld51
 
         public void update(long gameTimeMs)
         {
-            Console.WriteLine(gameTimeMs);
+            // Console.WriteLine(gameTimeMs);
             inputHandler.update(gameTimeMs);
 
             Vector2 movement = new Vector2();
@@ -31,7 +49,7 @@ namespace ld51
             if (inputHandler.currentState.getInput(Input.Down))
                 movement.Y--;
 
-            viewpoint += movement * Render.renderScale * 1.5f;
+            viewpoint += movement * Render.renderScale * 0.25f;
         }
     }
 }
