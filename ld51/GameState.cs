@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata;
 using Microsoft.Xna.Framework;
 
 namespace ld51
@@ -30,6 +32,9 @@ namespace ld51
         public List<Item> items = new List<Item>();
         public Dictionary<Point, Item> itemsByPos = new Dictionary<Point, Item>();
 
+        public List<Factory> factories = new List<Factory>();
+        public Dictionary<Point, Factory> factoriesByPos = new Dictionary<Point, Factory>();
+
 
         InputHandler inputHandler = new InputHandler();
         long tick = 0;
@@ -46,11 +51,7 @@ namespace ld51
 
         private bool isFactoryPart(Point p)
         {
-            Tile* tile = this.level.get(p);
-            return tile->tileId == Constants.factoryTopLeft ||
-                   tile->tileId == Constants.factoryTopRight ||
-                   tile->tileId == Constants.factoryBottomLeft ||
-                   tile->tileId == Constants.factoryBottomRight;
+            return factoriesByPos.ContainsKey(p);
         }
 
         public void update(long gameTimeMs)
@@ -125,15 +126,12 @@ namespace ld51
                     {
                         if (this.level.isPointValid(selectedPoint) &&
                             this.level.isPointValid(selectedPoint + new Point(1,1)) &&
-                            !isFactoryPart(selectedPoint) &&
-                            !isFactoryPart(selectedPoint + new Point(1,0)) &&
-                            !isFactoryPart(selectedPoint + new Point(0,1)) &&
-                            !isFactoryPart(selectedPoint + new Point(1,1)))
+                            !isFactoryPart(selectedPoint) && this.level.get(selectedPoint)->tileId == Constants.floor &&
+                            !isFactoryPart(selectedPoint + new Point(1,0)) && this.level.get(selectedPoint + new Point(1,0))->tileId == Constants.floor &&
+                            !isFactoryPart(selectedPoint + new Point(0,1)) && this.level.get(selectedPoint + new Point(0,1))->tileId == Constants.floor &&
+                            !isFactoryPart(selectedPoint + new Point(1,1)) && this.level.get(selectedPoint + new Point(1,1))->tileId == Constants.floor)
                         {
-                            this.level.get(selectedPoint)->tileId = Constants.factoryTopLeft;
-                            this.level.get(selectedPoint + new Point(1,0))->tileId = Constants.factoryTopRight;
-                            this.level.get(selectedPoint + new Point(0,1))->tileId = Constants.factoryBottomLeft;
-                            this.level.get(selectedPoint + new Point(1,1))->tileId = Constants.factoryBottomRight;
+                            this.addFactory(selectedPoint);
                         }
                         break;
                     }
@@ -142,29 +140,10 @@ namespace ld51
                     {
                         if (this.level.isPointValid(selectedPoint))
                         {
-                            if (isFactoryPart(selectedPoint))
+                            this.factoriesByPos.TryGetValue(selectedPoint, out Factory factory);
+                            if (factory != null)
                             {
-                                Point topLeft = new Point();
-                                switch (this.level.get(selectedPoint)->tileId)
-                                {
-                                    case Constants.factoryTopLeft:
-                                        topLeft = selectedPoint;
-                                        break;
-                                    case Constants.factoryTopRight:
-                                        topLeft = selectedPoint + new Point(-1, 0);
-                                        break;
-                                    case Constants.factoryBottomRight:
-                                        topLeft = selectedPoint + new Point(-1, -1);
-                                        break;
-                                    case Constants.factoryBottomLeft:
-                                        topLeft = selectedPoint + new Point(0, -1);
-                                        break;
-                                }
-
-                                this.level.get(topLeft)->tileId = Constants.floor;
-                                this.level.get(topLeft + new Point(1,0))->tileId = Constants.floor;
-                                this.level.get(topLeft + new Point(0,1))->tileId = Constants.floor;
-                                this.level.get(topLeft + new Point(1,1))->tileId = Constants.floor;
+                                removeFactory(factory);
                             }
                             else
                             {
@@ -188,11 +167,51 @@ namespace ld51
             this.tick++;
         }
 
-        private void addItem(Point pos)
+        private void addItem(Point pos, Item item = null)
         {
-            Item item = new Item(pos);
+            if (item == null)
+            {
+                item = new Item(pos);
+            }
+            else
+            {
+                item.position = pos;
+                item.renderPosition = new Vector2(pos.X, pos.Y);
+            }
+
             this.itemsByPos.Add(pos, item);
             this.items.Add(item);
+        }
+
+        private void removeItem(Item item)
+        {
+            this.items.Remove(item);
+            this.itemsByPos.Remove(item.position);
+        }
+
+        private void addFactory(Point pos)
+        {
+            Factory factory = new Factory(pos);
+            this.factories.Add(factory);
+            for (int y = 0; y < Constants.factoryDimensions.Y; y++)
+            {
+                for (int x = 0; x < Constants.factoryDimensions.X; x++)
+                {
+                    factoriesByPos[pos + new Point(x, y)] = factory;
+                }
+            }
+        }
+
+        private void removeFactory(Factory factory)
+        {
+            this.factories.Remove(factory);
+            for (int y = 0; y < Constants.factoryDimensions.Y; y++)
+            {
+                for (int x = 0; x < Constants.factoryDimensions.X; x++)
+                {
+                    factoriesByPos.Remove(factory.topLeft + new Point(x, y));
+                }
+            }
         }
 
         int ticksSinceLastItemUpdate = 0;
@@ -203,6 +222,9 @@ namespace ld51
                 foreach(Item item in this.items)
                     recursiveUpdateItem(item);
 
+                foreach(Factory factory in this.factories)
+                    updateFactory(factory);
+
                 ticksSinceLastItemUpdate = 0;
             }
             else
@@ -212,6 +234,53 @@ namespace ld51
 
             foreach (Item item in this.items)
                 item.visualUpdate(this);
+        }
+
+        private void updateFactory(Factory factory)
+        {
+            int inputBuffer = 4;
+            int outputBuffer = 2;
+
+            // suck up inputs
+            for (int x = 0; x < Constants.factoryDimensions.X; x++)
+            {
+                itemsByPos.TryGetValue(new Point(factory.topLeft.X + x, factory.topLeft.Y - 1), out Item item);
+                if (item != null && factory.inputs.Count < inputBuffer && item.lastTouchedTick == this.tick)
+                {
+                    this.removeItem(item);
+                    factory.inputs.Add(item);
+                }
+            }
+
+            // craft
+            if (factory.inputs.Count >= 2)
+            {
+                factory.inputs.RemoveAt(0);
+                factory.inputs.RemoveAt(0);
+                factory.outputs.Add(new Item(new Point(0,0)));
+            }
+
+            // dump outputs
+            while (factory.outputs.Count > 0)
+            {
+                Item output = factory.outputs[factory.outputs.Count - 1];
+
+                bool placed = false;
+                for (int x = 0; x < Constants.factoryDimensions.X; x++)
+                {
+                    Point point = new Point(factory.topLeft.X + x, factory.topLeft.Y + Constants.factoryDimensions.Y);
+                    itemsByPos.TryGetValue(point, out Item blocker);
+                    if (blocker == null)
+                    {
+                        addItem(point, output);
+                        placed = true;
+                        break;
+                    }
+                }
+
+                if (placed)
+                    factory.outputs.RemoveAt(factory.outputs.Count - 1);
+            }
         }
 
         private bool recursiveUpdateItem(Item item)
@@ -252,6 +321,15 @@ namespace ld51
 
             if (blockedByItem != null && !recursiveUpdateItem(blockedByItem))
                 return false;
+
+            Tile* destinationTile = this.level.get(destination);
+            if (destinationTile->tileId != Constants.beltRight &&
+                destinationTile->tileId != Constants.beltDown &&
+                destinationTile->tileId != Constants.beltLeft &&
+                destinationTile->tileId != Constants.beltUp)
+            {
+                return false;
+            }
 
             itemsByPos.Remove(item.position);
             item.position += movement;

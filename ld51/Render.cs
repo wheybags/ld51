@@ -49,6 +49,29 @@ namespace ld51
                                   Color.White);
             }
 
+            foreach (Factory factory in gameState.factories)
+            {
+                Point tilesetCoords = getCoordsInTileset(Constants.factoryTopLeft);
+
+                Rectangle sourceRect = new Rectangle()
+                {
+                    X = tilesetCoords.X * Constants.tileSize,
+                    Y = tilesetCoords.Y * Constants.tileSize,
+                    Width = Constants.tileSize * Constants.factoryDimensions.X,
+                    Height = Constants.tileSize * Constants.factoryDimensions.Y,
+                };
+
+                spriteBatch.Draw(Textures.tileset,
+                    (gameState.viewpoint + new Vector2(factory.topLeft.X, factory.topLeft.Y)) * Constants.tileSize * renderScale,
+                    sourceRect,
+                    Color.White,
+                    0,
+                    Vector2.Zero,
+                    new Vector2(renderScale, renderScale),
+                    SpriteEffects.None,
+                    0);
+            }
+
             int toolTile = -1;
             switch (gameState.tool)
             {

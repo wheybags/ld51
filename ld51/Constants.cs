@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
+using Microsoft.Xna.Framework;
 
 namespace ld51
 {
@@ -20,9 +21,7 @@ namespace ld51
         public const int factoryTool = 33;
 
         public const int factoryTopLeft = 19;
-        public const int factoryTopRight = 20;
-        public const int factoryBottomLeft = 35;
-        public const int factoryBottomRight = 36;
+        public static Point factoryDimensions = new Point(2, 2);
 
         public const int item = 2;
 
