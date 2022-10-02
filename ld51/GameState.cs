@@ -8,8 +8,9 @@ namespace ld51
 {
     public enum Tool
     {
-        Belt,
         Delete,
+        Belt,
+        BeltJunction,
         FactorySaw,
         FactoryGlue,
         FactoryPaintRed,
@@ -23,7 +24,10 @@ namespace ld51
         Down,
         Left,
         Right
+
     }
+
+
 
     public unsafe class GameState
     {
@@ -126,6 +130,12 @@ namespace ld51
                         break;
                     }
 
+                    case Tool.BeltJunction:
+                    {
+                        *this.level.get(selectedPoint) = new Tile() {tileId = Constants.beltJunction};
+                        break;
+                    }
+
                     case Tool.FactorySaw:
                     case Tool.FactoryGlue:
                     case Tool.FactoryPaintRed:
@@ -186,6 +196,8 @@ namespace ld51
                 this.tool = Tool.Delete;
             if (inputHandler.downThisFrame(Input.SelectBelt))
                 this.tool = Tool.Belt;
+            if (inputHandler.downThisFrame(Input.SelectBeltJunction))
+                this.tool = Tool.BeltJunction;
             if (inputHandler.downThisFrame(Input.SelectFactorySaw))
                 this.tool = Tool.FactorySaw;
             if (inputHandler.downThisFrame(Input.SelectFactoryGlue))
@@ -429,42 +441,93 @@ namespace ld51
             Tile* tile = this.level.get(item.position);
 
             Point movement = new Point();
-            switch (tile->tileId)
+            if (tile->tileId == Constants.beltJunction)
             {
-                case Constants.beltRight:
-                    movement = new Point(1, 0);
+                Direction outputDirection = tile->junctionNextOutput;
+
+                bool success = false;
+                for (int i = 0; i < 4; i++)
+                {
+                    Point movementTemp = Util.directionToVec(outputDirection);
+
+                    Point destination = item.position + movementTemp;
+
+                    if (!this.level.isPointValid(destination))
+                        goto nextDir;
+
+                    Tile* destinationTile = this.level.get(destination);
+
+                    if (destinationTile->tileId != Constants.beltRight &&
+                        destinationTile->tileId != Constants.beltDown &&
+                        destinationTile->tileId != Constants.beltLeft &&
+                        destinationTile->tileId != Constants.beltUp)
+                    {
+                        goto nextDir;
+                    }
+
+                    if (outputDirection == Direction.Up && destinationTile->tileId == Constants.beltDown)
+                        goto nextDir;
+                    if (outputDirection == Direction.Down && destinationTile->tileId == Constants.beltUp)
+                        goto nextDir;
+                    if (outputDirection == Direction.Left && destinationTile->tileId == Constants.beltRight)
+                        goto nextDir;
+                    if (outputDirection == Direction.Right && destinationTile->tileId == Constants.beltLeft)
+                        goto nextDir;
+
+                    this.itemsByPos.TryGetValue(item.position + movementTemp, out Item blockedByItem);
+                    if (blockedByItem != null)
+                        goto nextDir;
+
+                    success = true;
+                    movement = movementTemp;
+                    tile->junctionNextOutput = Util.rotateCW(outputDirection);
                     break;
-                case Constants.beltDown:
-                    movement = new Point(0, 1);
-                    break;
-                case Constants.beltLeft:
-                    movement = new Point(-1, 0);
-                    break;
-                case Constants.beltUp:
-                    movement = new Point(0, -1);
-                    break;
+nextDir:
+                    outputDirection = Util.rotateCW(outputDirection);
+                }
+
+                if (!success)
+                    return false;
             }
-
-            if (movement == Point.Zero)
-                return false;
-
-            Point destination = item.position + movement;
-
-            if (!this.level.isPointValid(destination))
-                return false;
-
-            this.itemsByPos.TryGetValue(destination, out Item blockedByItem);
-
-            if (blockedByItem != null && !recursiveUpdateItem(blockedByItem))
-                return false;
-
-            Tile* destinationTile = this.level.get(destination);
-            if (destinationTile->tileId != Constants.beltRight &&
-                destinationTile->tileId != Constants.beltDown &&
-                destinationTile->tileId != Constants.beltLeft &&
-                destinationTile->tileId != Constants.beltUp)
+            else
             {
-                return false;
+                switch (tile->tileId)
+                {
+                    case Constants.beltRight:
+                        movement = new Point(1, 0);
+                        break;
+                    case Constants.beltDown:
+                        movement = new Point(0, 1);
+                        break;
+                    case Constants.beltLeft:
+                        movement = new Point(-1, 0);
+                        break;
+                    case Constants.beltUp:
+                        movement = new Point(0, -1);
+                        break;
+                }
+
+                if (movement == Point.Zero)
+                    return false;
+
+                Point destination = item.position + movement;
+
+                if (!this.level.isPointValid(destination))
+                    return false;
+
+                Tile* destinationTile = this.level.get(destination);
+                if (destinationTile->tileId != Constants.beltRight &&
+                    destinationTile->tileId != Constants.beltDown &&
+                    destinationTile->tileId != Constants.beltLeft &&
+                    destinationTile->tileId != Constants.beltUp &&
+                    destinationTile->tileId != Constants.beltJunction)
+                {
+                    return false;
+                }
+
+                this.itemsByPos.TryGetValue(item.position + movement, out Item blockedByItem);
+                if (blockedByItem != null && !recursiveUpdateItem(blockedByItem))
+                    return false;
             }
 
             itemsByPos.Remove(item.position);

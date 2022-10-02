@@ -15,9 +15,11 @@ namespace ld51
         public const int beltDown = 16;
         public const int beltRight = 32;
         public const int beltLeft = 48;
+        public const int beltJunction = 64;
 
         public const int deleteTool = 17;
         public const int beltTool = 18;
+        public const int beltJunctionTool = 34;
         public const int factoryTool = 33;
 
         public const int factoryTopLeft = 19;

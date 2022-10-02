@@ -136,6 +136,9 @@ namespace ld51
                 case Tool.Belt:
                     toolTile = Constants.beltTool;
                     break;
+                case Tool.BeltJunction:
+                    toolTile = Constants.beltJunctionTool;
+                    break;
                 case Tool.Delete:
                     toolTile = Constants.deleteTool;
                     break;

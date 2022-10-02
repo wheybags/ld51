@@ -15,6 +15,7 @@ namespace ld51
 
         SelectDelete,
         SelectBelt,
+        SelectBeltJunction,
 
         SelectFactorySaw,
         SelectFactoryGlue,
@@ -142,16 +143,18 @@ namespace ld51
                         return keyboard.IsKeyDown(Keys.D1);
                     case Input.SelectBelt:
                         return keyboard.IsKeyDown(Keys.D2);
-                    case Input.SelectFactorySaw:
+                    case Input.SelectBeltJunction:
                         return keyboard.IsKeyDown(Keys.D3);
-                    case Input.SelectFactoryGlue:
+                    case Input.SelectFactorySaw:
                         return keyboard.IsKeyDown(Keys.D4);
-                    case Input.SelectFactoryPaintRed:
+                    case Input.SelectFactoryGlue:
                         return keyboard.IsKeyDown(Keys.D5);
-                    case Input.SelectFactoryPaintGreen:
+                    case Input.SelectFactoryPaintRed:
                         return keyboard.IsKeyDown(Keys.D6);
-                    case Input.SelectFactoryPaintBlue:
+                    case Input.SelectFactoryPaintGreen:
                         return keyboard.IsKeyDown(Keys.D7);
+                    case Input.SelectFactoryPaintBlue:
+                        return keyboard.IsKeyDown(Keys.D8);
                 }
 
                 Util.ReleaseAssert(false);

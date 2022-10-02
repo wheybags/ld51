@@ -55,5 +55,37 @@ namespace ld51
                 return null;
             return (XmlElement)list.Item(0);
         }
+
+        public static Direction rotateCW(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.Up:
+                    return Direction.Right;
+                case Direction.Right:
+                    return Direction.Down;
+                case Direction.Down:
+                    return Direction.Left;
+                case Direction.Left:
+                    return Direction.Up;
+            }
+            throw new Exception();
+        }
+
+        public static Point directionToVec(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.Up:
+                    return new Point(0, -1);
+                case Direction.Right:
+                    return new Point(1, 0);
+                case Direction.Down:
+                    return new Point(0, 1);
+                case Direction.Left:
+                    return new Point(-1, 0);
+            }
+            throw new Exception();
+        }
     }
 }

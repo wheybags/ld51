@@ -7,6 +7,8 @@ namespace ld51
     public struct Tile
     {
         public int tileId;
+
+        public Direction junctionNextOutput;
     }
 
     public unsafe class Tilemap
