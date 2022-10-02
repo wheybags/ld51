@@ -10,7 +10,11 @@ namespace ld51
     {
         Belt,
         Delete,
-        Factory,
+        FactorySaw,
+        FactoryGlue,
+        FactoryPaintRed,
+        FactoryPaintGreen,
+        FactoryPaintBlue,
     }
 
     public enum Direction
@@ -122,7 +126,11 @@ namespace ld51
                         break;
                     }
 
-                    case Tool.Factory:
+                    case Tool.FactorySaw:
+                    case Tool.FactoryGlue:
+                    case Tool.FactoryPaintRed:
+                    case Tool.FactoryPaintGreen:
+                    case Tool.FactoryPaintBlue:
                     {
                         if (this.level.isPointValid(selectedPoint) &&
                             this.level.isPointValid(selectedPoint + new Point(1,1)) &&
@@ -131,7 +139,26 @@ namespace ld51
                             !isFactoryPart(selectedPoint + new Point(0,1)) && this.level.get(selectedPoint + new Point(0,1))->tileId == Constants.floor &&
                             !isFactoryPart(selectedPoint + new Point(1,1)) && this.level.get(selectedPoint + new Point(1,1))->tileId == Constants.floor)
                         {
-                            this.addFactory(selectedPoint);
+                            FactoryType type = FactoryType.Saw;
+                            switch (this.tool)
+                            {
+                                case Tool.FactorySaw:
+                                    type = FactoryType.Saw;
+                                    break;
+                                case Tool.FactoryGlue:
+                                    type = FactoryType.Glue;
+                                    break;
+                                case Tool.FactoryPaintRed:
+                                    type = FactoryType.PaintRed;
+                                    break;
+                                case Tool.FactoryPaintGreen:
+                                    type = FactoryType.PaintGreen;
+                                    break;
+                                case Tool.FactoryPaintBlue:
+                                    type = FactoryType.PaintBlue;
+                                    break;
+                            }
+                            this.addFactory(selectedPoint, new Factory(type));
                         }
                         break;
                     }
@@ -159,8 +186,16 @@ namespace ld51
                 this.tool = Tool.Delete;
             if (inputHandler.downThisFrame(Input.SelectBelt))
                 this.tool = Tool.Belt;
-            if (inputHandler.downThisFrame(Input.SelectFactory))
-                this.tool = Tool.Factory;
+            if (inputHandler.downThisFrame(Input.SelectFactorySaw))
+                this.tool = Tool.FactorySaw;
+            if (inputHandler.downThisFrame(Input.SelectFactoryGlue))
+                this.tool = Tool.FactoryGlue;
+            if (inputHandler.downThisFrame(Input.SelectFactoryPaintRed))
+                this.tool = Tool.FactoryPaintRed;
+            if (inputHandler.downThisFrame(Input.SelectFactoryPaintGreen))
+                this.tool = Tool.FactoryPaintGreen;
+            if (inputHandler.downThisFrame(Input.SelectFactoryPaintBlue))
+                this.tool = Tool.FactoryPaintBlue;
 
             this.updateBeltItems();
 
@@ -182,9 +217,9 @@ namespace ld51
             this.itemsByPos.Remove(item.position);
         }
 
-        private void addFactory(Point pos)
+        private void addFactory(Point pos, Factory factory)
         {
-            Factory factory = new Factory(pos);
+            factory.topLeft = pos;
             this.factories.Add(factory);
             for (int y = 0; y < Constants.factoryDimensions.Y; y++)
             {
@@ -231,50 +266,88 @@ namespace ld51
 
         private void updateFactory(Factory factory)
         {
-            int inputBuffer = 1;
-            int outputBuffer = 2;
-
             // suck up inputs
             for (int x = 0; x < Constants.factoryDimensions.X; x++)
             {
-                itemsByPos.TryGetValue(new Point(factory.topLeft.X + x, factory.topLeft.Y - 1), out Item item);
-                if (item != null && factory.inputs.Count < inputBuffer && item.lastTouchedTick == this.tick)
+                Point point = new Point(factory.topLeft.X + x, factory.topLeft.Y - 1);
+                FactoryBuffer factoryBuffer = factory.getInput(point);
+
+                itemsByPos.TryGetValue(point, out Item item);
+                if (item != null && factoryBuffer.items.Count < factoryBuffer.maxSize && item.lastTouchedTick == this.tick)
                 {
+                    if (factory.type == FactoryType.Saw && item.parts.Count == 1)
+                        continue;
+
                     this.removeItem(item);
-                    factory.inputs.Add(item);
+                    factoryBuffer.items.Add(item);
                 }
             }
 
             // craft
-            if (factory.inputs.Count > 0)
+            switch (factory.type)
             {
-                Item input = factory.inputs[factory.inputs.Count - 1];
-                factory.inputs.RemoveAt(factory.inputs.Count - 1);
-
-                switch (input.parts.Count)
+                case FactoryType.Saw:
                 {
-                    case 1:
-                        throw new Exception("unimpl");
-                        break;
-                    case 2:
-                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[0]}));
-                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[1]}));
-                        break;
-                    case 3:
-                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[0], input.parts[1]}));
-                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[2]}));
-                        break;
-                    case 4:
-                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[0], input.parts[1]}));
-                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[2], input.parts[3]}));
-                        break;
+                    if (factory.inputsL.items.Count > 0 && factory.outputs.items.Count <= factory.outputs.maxSize - 2)
+                    {
+                        Item input = factory.inputsL.items[factory.inputsL.items.Count - 1];
+                        factory.inputsL.items.RemoveAt(factory.inputsL.items.Count - 1);
+
+                        Util.ReleaseAssert(input.parts.Count > 1 && input.parts.Count <= 4);
+                        switch (input.parts.Count)
+                        {
+                            case 2:
+                                factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[0]}));
+                                factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[1]}));
+                                break;
+                            case 3:
+                                factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[0], input.parts[1]}));
+                                factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[2]}));
+                                break;
+                            case 4:
+                                factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[0], input.parts[1]}));
+                                factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[2], input.parts[3]}));
+                                break;
+                        }
+                    }
+                    break;
+                }
+
+                case FactoryType.PaintRed:
+                case FactoryType.PaintGreen:
+                case FactoryType.PaintBlue:
+                {
+                    if (factory.inputsL.items.Count > 0 && factory.outputs.items.Count < factory.outputs.maxSize)
+                    {
+                        Item input = factory.inputsL.items[factory.inputsL.items.Count - 1];
+                        factory.inputsL.items.RemoveAt(factory.inputsL.items.Count - 1);
+
+                        ItemColor color = ItemColor.Red;
+                        switch (factory.type)
+                        {
+                            case FactoryType.PaintRed:
+                                color = ItemColor.Red;
+                                break;
+                            case FactoryType.PaintGreen:
+                                color = ItemColor.Green;
+                                break;
+                            case FactoryType.PaintBlue:
+                                color = ItemColor.Blue;
+                                break;
+                        }
+
+                        for (int i = 0; i < input.parts.Count; i++)
+                            input.parts[i] = color;
+                        factory.outputs.items.Add(input);
+                    }
+                    break;
                 }
             }
 
             // dump outputs
-            while (factory.outputs.Count > 0)
+            while (factory.outputs.items.Count > 0)
             {
-                Item output = factory.outputs[factory.outputs.Count - 1];
+                Item output = factory.outputs.items[factory.outputs.items.Count - 1];
 
                 bool placed = false;
                 for (int x = 0; x < Constants.factoryDimensions.X; x++)
@@ -290,7 +363,7 @@ namespace ld51
                 }
 
                 if (placed)
-                    factory.outputs.RemoveAt(factory.outputs.Count - 1);
+                    factory.outputs.items.RemoveAt(factory.outputs.items.Count - 1);
                 else
                     break;
             }

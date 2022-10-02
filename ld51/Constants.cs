@@ -25,6 +25,12 @@ namespace ld51
 
         public const int item = 52;
 
+        public const int factoryIconSaw = 21;
+        public const int factoryIconGlue = 85;
+        public const int factoryIconPaintRed = 37;
+        public const int factoryIconPaintGreen = 53;
+        public const int factoryIconPaintBlue = 69;
+
         public const long updatesPerSecond = 60;
 
         public const float itemMoveSpeedRealTilesPerSecond = 2f;

@@ -26,10 +26,17 @@ namespace ld51
                 {
                     Color color = Color.White;
                     Point currentPoint = new Point(x, y);
+
+                    bool factorySelected = gameState.tool == Tool.FactorySaw ||
+                                           gameState.tool == Tool.FactoryGlue ||
+                                           gameState.tool == Tool.FactoryPaintRed ||
+                                           gameState.tool == Tool.FactoryPaintGreen ||
+                                           gameState.tool == Tool.FactoryPaintBlue;
+
                     if (currentPoint == selectedPoint ||
-                        (gameState.tool == Tool.Factory && (currentPoint == selectedPoint + new Point(0,1) ||
-                                                            currentPoint == selectedPoint + new Point(1,0) ||
-                                                            currentPoint == selectedPoint + new Point(1,1)))
+                        (factorySelected && (currentPoint == selectedPoint + new Point(0,1) ||
+                                             currentPoint == selectedPoint + new Point(1,0) ||
+                                             currentPoint == selectedPoint + new Point(1,1)))
                        )
                     {
                         color = Color.Green;
@@ -90,8 +97,9 @@ namespace ld51
                     Height = Constants.tileSize * Constants.factoryDimensions.Y,
                 };
 
+                Vector2 pos = (gameState.viewpoint + new Vector2(factory.topLeft.X, factory.topLeft.Y)) * Constants.tileSize * renderScale;
                 spriteBatch.Draw(Textures.tileset,
-                    (gameState.viewpoint + new Vector2(factory.topLeft.X, factory.topLeft.Y)) * Constants.tileSize * renderScale,
+                    pos,
                     sourceRect,
                     Color.White,
                     0,
@@ -99,6 +107,27 @@ namespace ld51
                     new Vector2(renderScale, renderScale),
                     SpriteEffects.None,
                     0);
+
+                int icon = 0;
+                switch (factory.type)
+                {
+                    case FactoryType.Saw:
+                        icon = Constants.factoryIconSaw;
+                        break;
+                    case FactoryType.Glue:
+                        icon = Constants.factoryIconGlue;
+                        break;
+                    case FactoryType.PaintRed:
+                        icon = Constants.factoryIconPaintRed;
+                        break;
+                    case FactoryType.PaintGreen:
+                        icon = Constants.factoryIconPaintGreen;
+                        break;
+                    case FactoryType.PaintBlue:
+                        icon = Constants.factoryIconPaintBlue;
+                        break;
+                }
+                renderTileAtPixel(renderScale, icon, pos + new Vector2(8, 8) * renderScale, Color.White);
             }
 
             int toolTile = -1;
@@ -110,27 +139,34 @@ namespace ld51
                 case Tool.Delete:
                     toolTile = Constants.deleteTool;
                     break;
-                case Tool.Factory:
+                case Tool.FactorySaw:
+                case Tool.FactoryGlue:
+                case Tool.FactoryPaintRed:
+                case Tool.FactoryPaintGreen:
+                case Tool.FactoryPaintBlue:
                     toolTile = Constants.factoryTool;
                     break;
             }
             Util.ReleaseAssert(toolTile != -1);
 
             float toolRot = 0;
-            switch (gameState.toolDirection)
+            if (gameState.tool == Tool.Belt)
             {
-                case Direction.Up:
-                    toolRot = 0;
-                    break;
-                case Direction.Right:
-                    toolRot = 90;
-                    break;
-                case Direction.Down:
-                    toolRot = 180;
-                    break;
-                case Direction.Left:
-                    toolRot = 270;
-                    break;
+                switch (gameState.toolDirection)
+                {
+                    case Direction.Up:
+                        toolRot = 0;
+                        break;
+                    case Direction.Right:
+                        toolRot = 90;
+                        break;
+                    case Direction.Down:
+                        toolRot = 180;
+                        break;
+                    case Direction.Left:
+                        toolRot = 270;
+                        break;
+                }
             }
 
             Point mousePos_ = Mouse.GetState().Position;
