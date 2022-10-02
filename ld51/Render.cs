@@ -12,7 +12,7 @@ namespace ld51
         private static SpriteBatch spriteBatch = new SpriteBatch(Game1.game.GraphicsDevice);
         public static int renderScale = 3;
 
-        public static void render(GraphicsDevice GraphicsDevice, GameState gameState)
+        public static void render(long ms, GraphicsDevice GraphicsDevice, GameState gameState)
         {
             GraphicsDevice.SetRenderTarget(null);
             GraphicsDevice.Clear(new Color(0, 0, 0, 255));
@@ -43,10 +43,29 @@ namespace ld51
                         color = Color.Green;
                     }
 
-                    renderTileAtPixel(renderScale,
-                                      gameState.level.get(x, y)->tileId,
+                    int tile = gameState.level.get(x, y)->tileId;
+                    float rotation = 0f;
+                    switch (tile)
+                    {
+                        case Constants.beltRight:
+                            tile = Constants.beltUp;
+                            rotation = 90f;
+                            break;
+                        case Constants.beltDown:
+                            tile = Constants.beltUp;
+                            rotation = 180f;
+                            break;
+                        case Constants.beltLeft:
+                            tile = Constants.beltUp;
+                            rotation = 270f;
+                            break;
+                    }
+
+                    renderTileAtPixel(ms, renderScale,
+                                      tile,
                                       (gameState.viewpoint + new Vector2(x, y)) * Constants.tileSize * renderScale,
-                                      color);
+                                      color,
+                                      rotation);
                 }
             }
 
@@ -69,7 +88,7 @@ namespace ld51
                 };
 
                 Vector2 pos = (gameState.viewpoint + new Vector2(factory.topLeft.X, factory.topLeft.Y)) * Constants.tileSize * renderScale;
-                spriteBatch.Draw(Textures.tileset,
+                spriteBatch.Draw(Textures.tileset.getCurrentFrame(ms),
                     pos,
                     sourceRect,
                     Color.White,
@@ -98,7 +117,7 @@ namespace ld51
                         icon = Constants.factoryIconPaintBlue;
                         break;
                 }
-                renderTileAtPixel(renderScale, icon, pos + new Vector2(8, 8) * renderScale, Color.White);
+                renderTileAtPixel(0, renderScale, icon, pos + new Vector2(8, 8) * renderScale, Color.White);
             }
 
             int toolTile1 = -1;
@@ -159,9 +178,9 @@ namespace ld51
 
             Point mousePos_ = Mouse.GetState().Position;
             Vector2 mousePos = new Vector2(mousePos_.X, mousePos_.Y);
-            renderTileAtPixel(renderScale, toolTile1, mousePos, Color.White, toolRot);
+            renderTileAtPixel(0, renderScale, toolTile1, mousePos, Color.White, toolRot);
             if (toolTile2 != -1)
-                renderTileAtPixel(renderScale, toolTile2, mousePos + new Vector2(10, 0) * renderScale, Color.White, toolRot);
+                renderTileAtPixel(0, renderScale, toolTile2, mousePos + new Vector2(10, 0) * renderScale, Color.White, toolRot);
 
             // top hud
             {
@@ -200,7 +219,7 @@ namespace ld51
             foreach (char c in str)
             {
                 int tile = Constants.numberZero + (c - '0');
-                renderTileAtPixel(renderScale, tile, pos, Color.White);
+                renderTileAtPixel(0, renderScale, tile, pos, Color.White);
                 pos.X += 5 * renderScale;
             }
         }
@@ -233,21 +252,21 @@ namespace ld51
                 throw new Exception();
             }
 
-            renderTileAtPixel(renderScale, Constants.item, positions[0], getColor(parts[0]));
+            renderTileAtPixel(0, renderScale, Constants.item, positions[0], getColor(parts[0]));
 
             if (parts.Count == 3 && parts[1] == parts[2])
             {
-                renderTileAtPixel(renderScale, Constants.item, positions[2], getColor(parts[1]));
-                renderTileAtPixel(renderScale, Constants.item, positions[3], getColor(parts[2]));
+                renderTileAtPixel(0, renderScale, Constants.item, positions[2], getColor(parts[1]));
+                renderTileAtPixel(0, renderScale, Constants.item, positions[3], getColor(parts[2]));
             }
             else
             {
                 if (parts.Count >= 2)
-                    renderTileAtPixel(renderScale, Constants.item, positions[1], getColor(parts[1]));
+                    renderTileAtPixel(0, renderScale, Constants.item, positions[1], getColor(parts[1]));
                 if (parts.Count >= 3)
-                    renderTileAtPixel(renderScale, Constants.item, positions[2], getColor(parts[2]));
+                    renderTileAtPixel(0, renderScale, Constants.item, positions[2], getColor(parts[2]));
                 if (parts.Count == 4)
-                    renderTileAtPixel(renderScale, Constants.item, positions[3], getColor(parts[3]));
+                    renderTileAtPixel(0, renderScale, Constants.item, positions[3], getColor(parts[3]));
             }
         }
 
@@ -271,7 +290,7 @@ namespace ld51
             return new Point(tileX, tileY);
         }
 
-        private static void renderTileAtPixel(int scale, int tileId, Vector2 pixelPos, Color color, float rotationDegrees = 0f)
+        private static void renderTileAtPixel(long ms, int scale, int tileId, Vector2 pixelPos, Color color, float rotationDegrees = 0f)
         {
             Point tilesetCoords = getCoordsInTileset(tileId);
 
@@ -282,7 +301,7 @@ namespace ld51
                 Width = Constants.tileSize,
                 Height = Constants.tileSize,
             };
-            spriteBatch.Draw(Textures.tileset,
+            spriteBatch.Draw(Textures.tileset.getCurrentFrame(ms),
                              pixelPos + new Vector2(Constants.tileSize/2f, Constants.tileSize/2f) * scale,
                              sourceRect,
                              color,

@@ -61,7 +61,7 @@ namespace ld51
         protected override void Draw(GameTime gameTime)
         {
             long gameTimeMs = Util.getMs(gameTime);
-            Render.render(GraphicsDevice, gameState);
+            Render.render(gameTimeMs, GraphicsDevice, gameState);
 
             base.Draw(gameTime);
         }

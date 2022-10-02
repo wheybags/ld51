@@ -5,13 +5,13 @@ namespace ld51
 {
     public static class Textures
     {
-        public static Texture2D tileset;
+        public static Animation tileset;
         public static Texture2D hudBottom;
         public static Texture2D hudTop;
 
         public static void loadTextures()
         {
-            tileset = loadTexture("gfx/tileset.png");
+            tileset = new Animation("gfx/tileset", (long)(1000 * 0.15f));
             hudBottom = loadTexture("gfx/hud-bottom.png");
             hudTop = loadTexture("gfx/hud-top.png");
         }
