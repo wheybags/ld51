@@ -163,21 +163,21 @@ namespace ld51
             if (toolTile2 != -1)
                 renderTileAtPixel(renderScale, toolTile2, mousePos + new Vector2(10, 0) * renderScale, Color.White, toolRot);
 
-
-
-
             // top hud
             {
                 Vector2 hudTopPos = new Vector2(Game1.game.Window.ClientBounds.Width / 2 - Textures.hudBottom.Bounds.Width * renderScale / 2, 0);
                 spriteBatch.Draw(Textures.hudTop, hudTopPos, null, Color.White, 0f, new Vector2(0,0), new Vector2(renderScale, renderScale), SpriteEffects.None, 1);
 
-                if (gameState.target != null)
+                float secondsRemaining =(((float)gameState.targetTicksRemaining) / ((float)Constants.updatesPerSecond));
+                float fractPart = secondsRemaining - (long)secondsRemaining;
+
+                if (gameState.target != null && !gameState.started || secondsRemaining < 55 || fractPart > 0.5)
                     renderItem(hudTopPos + new Vector2(32, 11) * renderScale, gameState.target);
 
                 renderNumber(hudTopPos + new Vector2(85, 10) * renderScale, gameState.score);
 
-                int secondsRemaining = (int)(((float)gameState.targetTicksRemaining) / ((float)Constants.updatesPerSecond));
-                renderNumber(hudTopPos + new Vector2(85, 20) * renderScale, secondsRemaining);
+                if (!gameState.started || secondsRemaining < 55 || fractPart > 0.5)
+                    renderNumber(hudTopPos + new Vector2(85, 20) * renderScale, (int)secondsRemaining);
 
                 if (gameState.nextTarget != null)
                     renderItem(hudTopPos + new Vector2(112, 11) * renderScale, gameState.nextTarget);

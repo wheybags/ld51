@@ -52,6 +52,9 @@ namespace ld51
         public const int roundTicks = (int)Constants.updatesPerSecond * 60 * 1;
         public int targetTicksRemaining = roundTicks;
 
+        public bool started = false;
+
+
         InputHandler inputHandler = new InputHandler();
         long tick = 0;
 
@@ -77,8 +80,9 @@ namespace ld51
 
         public void update(long gameTimeMs)
         {
-            targetTicksRemaining--;
-            if (targetTicksRemaining == 0)
+            targetTicksRemaining = Math.Max(targetTicksRemaining - 1, 0);
+
+            if (started && targetTicksRemaining == 0)
             {
                 targetTicksRemaining = roundTicks;
                 targetIndex++;
@@ -363,7 +367,10 @@ namespace ld51
                         if (item != null)
                         {
                             if (tile->tileId == Constants.goal && this.target != null && item.parts.SequenceEqual(this.target))
+                            {
                                 this.score++;
+                                started = true;
+                            }
 
                             removeItem(item);
                         }
