@@ -275,9 +275,6 @@ namespace ld51
                 itemsByPos.TryGetValue(point, out Item item);
                 if (item != null && factoryBuffer.items.Count < factoryBuffer.maxSize && item.lastTouchedTick == this.tick)
                 {
-                    if (factory.type == FactoryType.Saw && item.parts.Count == 1)
-                        continue;
-
                     this.removeItem(item);
                     factoryBuffer.items.Add(item);
                 }
@@ -296,6 +293,9 @@ namespace ld51
                         Util.ReleaseAssert(input.parts.Count > 1 && input.parts.Count <= 4);
                         switch (input.parts.Count)
                         {
+                            case 1:
+                                factory.outputs.items.Add(input);
+                                break;
                             case 2:
                                 factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[0]}));
                                 factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[1]}));
@@ -308,6 +308,56 @@ namespace ld51
                                 factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[0], input.parts[1]}));
                                 factory.outputs.items.Add(new Item(new List<ItemColor>(){input.parts[2], input.parts[3]}));
                                 break;
+                        }
+                    }
+                    break;
+                }
+
+                case FactoryType.Glue:
+                {
+                    if (factory.outputs.items.Count < factory.outputs.maxSize)
+                    {
+                        Item inputL = null;
+                        if (factory.inputsL.items.Count > 0)
+                            inputL = factory.inputsL.items[factory.inputsL.items.Count - 1];
+
+                        Item inputR = null;
+                        if (factory.inputsR.items.Count > 0)
+                            inputR = factory.inputsR.items[factory.inputsR.items.Count - 1];
+
+                        if (inputL != null && inputL.parts.Count == 4)
+                        {
+                            factory.outputs.items.Add(inputL);
+                            factory.inputsL.items.RemoveAt(factory.inputsL.items.Count - 1);
+                            inputL = null;
+                        }
+
+                        if (inputR != null && inputR.parts.Count == 4)
+                        {
+                            factory.outputs.items.Add(inputR);
+                            factory.inputsR.items.RemoveAt(factory.inputsR.items.Count - 1);
+                            inputR = null;
+                        }
+
+                        int totalCount = 0;
+                        totalCount += inputL != null ? inputL.parts.Count : 0;
+                        totalCount += inputR != null ? inputR.parts.Count : 0;
+
+                        if (totalCount > 4)
+                        {
+                            Util.ReleaseAssert(inputR != null && inputL != null);
+                            factory.outputs.items.Add(inputL);
+                            factory.inputsL.items.RemoveAt(factory.inputsL.items.Count - 1);
+                            factory.outputs.items.Add(inputR);
+                            factory.inputsR.items.RemoveAt(factory.inputsR.items.Count - 1);
+                        }
+                        else if (inputL != null && inputR != null)
+                        {
+                            inputL.parts.AddRange(inputR.parts);
+                            inputL.parts.Sort();
+                            factory.outputs.items.Add(inputL);
+                            factory.inputsL.items.RemoveAt(factory.inputsL.items.Count - 1);
+                            factory.inputsR.items.RemoveAt(factory.inputsR.items.Count - 1);
                         }
                     }
                     break;
