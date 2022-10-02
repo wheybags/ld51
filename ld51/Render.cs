@@ -172,6 +172,10 @@ namespace ld51
                 spriteBatch.Draw(Textures.hudTop, hudTopPos, null, Color.White, 0f, new Vector2(0,0), new Vector2(renderScale, renderScale), SpriteEffects.None, 1);
 
                 renderItem(hudTopPos + new Vector2(32, 11) * renderScale, gameState.target);
+
+                renderNumber(hudTopPos + new Vector2(85, 10) * renderScale, gameState.score);
+                renderNumber(hudTopPos + new Vector2(85, 20) * renderScale, gameState.score);
+
                 renderItem(hudTopPos + new Vector2(112, 11) * renderScale, gameState.target);
             }
 
@@ -186,15 +190,26 @@ namespace ld51
             spriteBatch.End();
         }
 
-        private static void renderItem(Vector2 tilePos, List<ItemColor> parts)
+        private static void renderNumber(Vector2 pos, int number)
+        {
+            string str = "" + number;
+            foreach (char c in str)
+            {
+                int tile = Constants.numberZero + (c - '0');
+                renderTileAtPixel(renderScale, tile, pos, Color.White);
+                pos.X += 5 * renderScale;
+            }
+        }
+
+        private static void renderItem(Vector2 pos, List<ItemColor> parts)
         {
             float off = 3 * renderScale;
             Vector2[] positions = new []
             {
-                tilePos + new Vector2(-off,-off),
-                tilePos + new Vector2(+off,-off),
-                tilePos + new Vector2(-off,+off),
-                tilePos + new Vector2(+off,+off),
+                pos + new Vector2(-off,-off),
+                pos + new Vector2(+off,-off),
+                pos + new Vector2(-off,+off),
+                pos + new Vector2(+off,+off),
             };
 
             for (int i = 0; i < parts.Count; i++)

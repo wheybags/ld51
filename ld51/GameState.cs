@@ -43,7 +43,7 @@ namespace ld51
         public List<Factory> factories = new List<Factory>();
         public Dictionary<Point, Factory> factoriesByPos = new Dictionary<Point, Factory>();
 
-        int score = 0;
+        public int score = 0;
         public List<ItemColor> target = new List<ItemColor>() {ItemColor.Red, ItemColor.Red, ItemColor.Blue, ItemColor.Blue};
 
         InputHandler inputHandler = new InputHandler();

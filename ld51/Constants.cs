@@ -30,6 +30,8 @@ namespace ld51
 
         public const int item = 52;
 
+        public const int numberZero = 96;
+
         public const int factoryIconSaw = 21;
         public const int factoryIconGlue = 85;
         public const int factoryIconPaintRed = 37;
