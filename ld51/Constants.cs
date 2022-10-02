@@ -23,7 +23,7 @@ namespace ld51
         public const int factoryTopLeft = 19;
         public static Point factoryDimensions = new Point(2, 2);
 
-        public const int item = 2;
+        public const int item = 52;
 
         public const long updatesPerSecond = 60;
 

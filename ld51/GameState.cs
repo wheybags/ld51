@@ -44,9 +44,9 @@ namespace ld51
         {
             this.level = level;
 
-            addItem(new Point(0,0));
-            addItem(new Point(1,0));
-            addItem(new Point(2,0));
+            addItem(new Point(0,0), new Item(new List<ItemColor>() {ItemColor.Red, ItemColor.Red, ItemColor.Red, ItemColor.Red}));
+            addItem(new Point(1,0), new Item(new List<ItemColor>() {ItemColor.Green, ItemColor.Green, ItemColor.Green, ItemColor.Green}));
+            addItem(new Point(2,0), new Item(new List<ItemColor>() {ItemColor.Blue, ItemColor.Blue, ItemColor.Blue, ItemColor.Blue}));
         }
 
         private bool isFactoryPart(Point p)
@@ -167,17 +167,10 @@ namespace ld51
             this.tick++;
         }
 
-        private void addItem(Point pos, Item item = null)
+        private void addItem(Point pos, Item item)
         {
-            if (item == null)
-            {
-                item = new Item(pos);
-            }
-            else
-            {
-                item.position = pos;
-                item.renderPosition = new Vector2(pos.X, pos.Y);
-            }
+            item.position = pos;
+            item.renderPosition = new Vector2(pos.X, pos.Y);
 
             this.itemsByPos.Add(pos, item);
             this.items.Add(item);
@@ -238,7 +231,7 @@ namespace ld51
 
         private void updateFactory(Factory factory)
         {
-            int inputBuffer = 4;
+            int inputBuffer = 1;
             int outputBuffer = 2;
 
             // suck up inputs
@@ -253,11 +246,29 @@ namespace ld51
             }
 
             // craft
-            if (factory.inputs.Count >= 2)
+            if (factory.inputs.Count > 0)
             {
-                factory.inputs.RemoveAt(0);
-                factory.inputs.RemoveAt(0);
-                factory.outputs.Add(new Item(new Point(0,0)));
+                Item input = factory.inputs[factory.inputs.Count - 1];
+                factory.inputs.RemoveAt(factory.inputs.Count - 1);
+
+                switch (input.parts.Count)
+                {
+                    case 1:
+                        throw new Exception("unimpl");
+                        break;
+                    case 2:
+                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[0]}));
+                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[1]}));
+                        break;
+                    case 3:
+                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[0], input.parts[1]}));
+                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[2]}));
+                        break;
+                    case 4:
+                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[0], input.parts[1]}));
+                        factory.outputs.Add(new Item(new List<ItemColor>(){input.parts[2], input.parts[3]}));
+                        break;
+                }
             }
 
             // dump outputs
@@ -280,6 +291,8 @@ namespace ld51
 
                 if (placed)
                     factory.outputs.RemoveAt(factory.outputs.Count - 1);
+                else
+                    break;
             }
         }
 

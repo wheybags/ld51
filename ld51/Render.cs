@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -43,10 +44,38 @@ namespace ld51
 
             foreach (Item item in gameState.items)
             {
-                renderTileAtPixel(renderScale,
-                                  Constants.item,
-                                  (gameState.viewpoint + item.renderPosition) * Constants.tileSize * renderScale,
-                                  Color.White);
+                Vector2 tilePos = (gameState.viewpoint + item.renderPosition) * Constants.tileSize * renderScale;
+
+                float off = 3 * renderScale;
+                Vector2[] positions = new []
+                {
+                    tilePos + new Vector2(-off,-off),
+                    tilePos + new Vector2(+off,-off),
+                    tilePos + new Vector2(-off,+off),
+                    tilePos + new Vector2(+off,+off),
+                };
+
+                for (int i = 0; i < item.parts.Count; i++)
+                {
+                    Color color = Color.White;
+                    switch (item.parts[i])
+                    {
+                        case ItemColor.Red:
+                            color = new Color(255,0,0);
+                            break;
+                        case ItemColor.Green:
+                            color = new Color(0,255,0);
+                            break;
+                        case ItemColor.Blue:
+                            color = new Color(0,0,255);
+                            break;
+                    }
+
+                    renderTileAtPixel(renderScale,
+                                      Constants.item,
+                                      positions[i],
+                                      color);
+                }
             }
 
             foreach (Factory factory in gameState.factories)

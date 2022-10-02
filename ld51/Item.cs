@@ -1,17 +1,28 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 namespace ld51
 {
+    public enum ItemColor
+    {
+        Red,
+        Green,
+        Blue,
+    }
+
     public unsafe class Item
     {
         public Point position;
         public Vector2 renderPosition;
         public long lastTouchedTick = 0;
 
-        public Item(Point position)
+        public List<ItemColor> parts;
+
+        public Item(List<ItemColor> parts)
         {
-            this.position = position;
-            this.renderPosition = new Vector2(position.X, position.Y);
+            this.parts = parts;
+            this.parts.Sort();
+            Util.ReleaseAssert(this.parts.Count <= 4 && this.parts.Count > 0);
         }
 
         int ticksSinceLastUpdate = 0;
