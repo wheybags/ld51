@@ -216,26 +216,38 @@ namespace ld51
                 pos + new Vector2(+off,+off),
             };
 
-            for (int i = 0; i < parts.Count; i++)
+            Color getColor(ItemColor color)
             {
-                Color color = Color.White;
-                switch (parts[i])
+                switch (color)
                 {
                     case ItemColor.Red:
-                        color = new Color(255,0,0);
+                        return new Color(255,0,0);
                         break;
                     case ItemColor.Green:
-                        color = new Color(0,255,0);
+                        return new Color(0,255,0);
                         break;
                     case ItemColor.Blue:
-                        color = new Color(0,0,255);
+                        return new Color(0,0,255);
                         break;
                 }
+                throw new Exception();
+            }
 
-                renderTileAtPixel(renderScale,
-                    Constants.item,
-                    positions[i],
-                    color);
+            renderTileAtPixel(renderScale, Constants.item, positions[0], getColor(parts[0]));
+
+            if (parts.Count == 3 && parts[1] == parts[2])
+            {
+                renderTileAtPixel(renderScale, Constants.item, positions[2], getColor(parts[1]));
+                renderTileAtPixel(renderScale, Constants.item, positions[3], getColor(parts[2]));
+            }
+            else
+            {
+                if (parts.Count >= 2)
+                    renderTileAtPixel(renderScale, Constants.item, positions[1], getColor(parts[1]));
+                if (parts.Count >= 3)
+                    renderTileAtPixel(renderScale, Constants.item, positions[2], getColor(parts[2]));
+                if (parts.Count == 4)
+                    renderTileAtPixel(renderScale, Constants.item, positions[3], getColor(parts[3]));
             }
         }
 
