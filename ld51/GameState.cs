@@ -44,6 +44,7 @@ namespace ld51
         public Dictionary<Point, Factory> factoriesByPos = new Dictionary<Point, Factory>();
 
         int score = 0;
+        public List<ItemColor> target = new List<ItemColor>() {ItemColor.Red, ItemColor.Red, ItemColor.Blue, ItemColor.Blue};
 
         InputHandler inputHandler = new InputHandler();
         long tick = 0;
@@ -215,7 +216,15 @@ namespace ld51
                             }
                             else
                             {
-                                this.level.get(selectedPoint)->tileId = Constants.floor;
+                                Tile* tile = this.level.get(selectedPoint);
+                                if (tile->tileId == Constants.beltRight ||
+                                    tile->tileId == Constants.beltDown ||
+                                    tile->tileId == Constants.beltLeft ||
+                                    tile->tileId == Constants.beltUp ||
+                                    tile->tileId == Constants.beltJunction)
+                                {
+                                    this.level.get(selectedPoint)->tileId = Constants.floor;
+                                }
                             }
                         }
                         break;

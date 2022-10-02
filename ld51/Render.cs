@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -51,38 +52,8 @@ namespace ld51
 
             foreach (Item item in gameState.items)
             {
-                Vector2 tilePos = (gameState.viewpoint + item.renderPosition) * Constants.tileSize * renderScale;
-
-                float off = 3 * renderScale;
-                Vector2[] positions = new []
-                {
-                    tilePos + new Vector2(-off,-off),
-                    tilePos + new Vector2(+off,-off),
-                    tilePos + new Vector2(-off,+off),
-                    tilePos + new Vector2(+off,+off),
-                };
-
-                for (int i = 0; i < item.parts.Count; i++)
-                {
-                    Color color = Color.White;
-                    switch (item.parts[i])
-                    {
-                        case ItemColor.Red:
-                            color = new Color(255,0,0);
-                            break;
-                        case ItemColor.Green:
-                            color = new Color(0,255,0);
-                            break;
-                        case ItemColor.Blue:
-                            color = new Color(0,0,255);
-                            break;
-                    }
-
-                    renderTileAtPixel(renderScale,
-                                      Constants.item,
-                                      positions[i],
-                                      color);
-                }
+                Vector2 pos = (gameState.viewpoint + item.renderPosition) * Constants.tileSize * renderScale;
+                renderItem(pos, item.parts);
             }
 
             foreach (Factory factory in gameState.factories)
@@ -193,12 +164,62 @@ namespace ld51
                 renderTileAtPixel(renderScale, toolTile2, mousePos + new Vector2(10, 0) * renderScale, Color.White, toolRot);
 
 
-            Vector2 hudBottomPos = new Vector2(Game1.game.Window.ClientBounds.Width / 2 - Textures.hudBottom.Bounds.Width * renderScale / 2,
-                                               Game1.game.Window.ClientBounds.Height - Textures.hudBottom.Bounds.Height * renderScale);
-            spriteBatch.Draw(Textures.hudBottom, hudBottomPos, null, Color.White, 0f, new Vector2(0,0), new Vector2(renderScale, renderScale), SpriteEffects.None, 1);
+
+
+            // top hud
+            {
+                Vector2 hudTopPos = new Vector2(Game1.game.Window.ClientBounds.Width / 2 - Textures.hudBottom.Bounds.Width * renderScale / 2, 0);
+                spriteBatch.Draw(Textures.hudTop, hudTopPos, null, Color.White, 0f, new Vector2(0,0), new Vector2(renderScale, renderScale), SpriteEffects.None, 1);
+
+                renderItem(hudTopPos + new Vector2(32, 11) * renderScale, gameState.target);
+                renderItem(hudTopPos + new Vector2(112, 11) * renderScale, gameState.target);
+            }
+
+            // bottom hud
+            {
+                Vector2 hudBottomPos = new Vector2(Game1.game.Window.ClientBounds.Width / 2 - Textures.hudBottom.Bounds.Width * renderScale / 2,
+                    Game1.game.Window.ClientBounds.Height - Textures.hudBottom.Bounds.Height * renderScale);
+                spriteBatch.Draw(Textures.hudBottom, hudBottomPos, null, Color.White, 0f, new Vector2(0,0), new Vector2(renderScale, renderScale), SpriteEffects.None, 1);
+            }
+
 
             spriteBatch.End();
         }
+
+        private static void renderItem(Vector2 tilePos, List<ItemColor> parts)
+        {
+            float off = 3 * renderScale;
+            Vector2[] positions = new []
+            {
+                tilePos + new Vector2(-off,-off),
+                tilePos + new Vector2(+off,-off),
+                tilePos + new Vector2(-off,+off),
+                tilePos + new Vector2(+off,+off),
+            };
+
+            for (int i = 0; i < parts.Count; i++)
+            {
+                Color color = Color.White;
+                switch (parts[i])
+                {
+                    case ItemColor.Red:
+                        color = new Color(255,0,0);
+                        break;
+                    case ItemColor.Green:
+                        color = new Color(0,255,0);
+                        break;
+                    case ItemColor.Blue:
+                        color = new Color(0,0,255);
+                        break;
+                }
+
+                renderTileAtPixel(renderScale,
+                    Constants.item,
+                    positions[i],
+                    color);
+            }
+        }
+
 
         public static Point getSelectedPoint(GameState gameState)
         {
