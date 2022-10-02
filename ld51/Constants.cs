@@ -10,6 +10,9 @@ namespace ld51
         public const int tileSize = 16;
 
         public const int floor = 1;
+        public const int spawner = 4;
+        public const int goal = 3;
+        public const int bin = 2;
 
         public const int beltUp = 0;
         public const int beltDown = 16;

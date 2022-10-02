@@ -43,6 +43,7 @@ namespace ld51
         public List<Factory> factories = new List<Factory>();
         public Dictionary<Point, Factory> factoriesByPos = new Dictionary<Point, Factory>();
 
+        int score = 0;
 
         InputHandler inputHandler = new InputHandler();
         long tick = 0;
@@ -51,10 +52,6 @@ namespace ld51
         public GameState(Tilemap level)
         {
             this.level = level;
-
-            addItem(new Point(0,0), new Item(new List<ItemColor>() {ItemColor.Red, ItemColor.Red, ItemColor.Red, ItemColor.Red}));
-            addItem(new Point(1,0), new Item(new List<ItemColor>() {ItemColor.Green, ItemColor.Green, ItemColor.Green, ItemColor.Green}));
-            addItem(new Point(2,0), new Item(new List<ItemColor>() {ItemColor.Blue, ItemColor.Blue, ItemColor.Blue, ItemColor.Blue}));
         }
 
         private bool isFactoryPart(Point p)
@@ -107,31 +104,65 @@ namespace ld51
                 {
                     case Tool.Belt:
                     {
-                        if (this.level.isPointValid(selectedPoint) && !isFactoryPart(selectedPoint))
+                        if (!this.level.isPointValid(selectedPoint))
+                            break;
+
+                        if (isFactoryPart(selectedPoint))
+                            break;
+
+                        Tile* tile = this.level.get(selectedPoint);
+
+                        if (tile->tileId != Constants.floor &&
+                            tile->tileId != Constants.beltUp &&
+                            tile->tileId != Constants.beltDown &&
+                            tile->tileId != Constants.beltLeft &&
+                            tile->tileId != Constants.beltRight &&
+                            tile->tileId != Constants.beltJunction)
                         {
-                            int newTile = 0;
-                            switch (this.toolDirection)
-                            {
-                                case Direction.Up:
-                                    newTile = Constants.beltUp;
-                                    break;
-                                case Direction.Right:
-                                    newTile = Constants.beltRight;
-                                    break;
-                                case Direction.Down:
-                                    newTile = Constants.beltDown;
-                                    break;
-                                case Direction.Left:
-                                    newTile = Constants.beltLeft;
-                                    break;
-                            }
-                            this.level.get(selectedPoint)->tileId = newTile;
+                            break;
                         }
+
+                        int newTile = 0;
+                        switch (this.toolDirection)
+                        {
+                            case Direction.Up:
+                                newTile = Constants.beltUp;
+                                break;
+                            case Direction.Right:
+                                newTile = Constants.beltRight;
+                                break;
+                            case Direction.Down:
+                                newTile = Constants.beltDown;
+                                break;
+                            case Direction.Left:
+                                newTile = Constants.beltLeft;
+                                break;
+                        }
+
+                        this.level.get(selectedPoint)->tileId = newTile;
                         break;
                     }
 
                     case Tool.BeltJunction:
                     {
+                        if (!this.level.isPointValid(selectedPoint))
+                            break;
+
+                        if (isFactoryPart(selectedPoint))
+                            break;
+
+                        Tile* tile = this.level.get(selectedPoint);
+
+                        if (tile->tileId != Constants.floor &&
+                            tile->tileId != Constants.beltUp &&
+                            tile->tileId != Constants.beltDown &&
+                            tile->tileId != Constants.beltLeft &&
+                            tile->tileId != Constants.beltRight &&
+                            tile->tileId != Constants.beltJunction)
+                        {
+                            break;
+                        }
+
                         *this.level.get(selectedPoint) = new Tile() {tileId = Constants.beltJunction};
                         break;
                     }
@@ -255,6 +286,7 @@ namespace ld51
         }
 
         int ticksSinceLastItemUpdate = 0;
+        long nextSpawnTick = 0;
         private void updateBeltItems()
         {
             if (ticksSinceLastItemUpdate > Constants.updatesPerSecond / Constants.itemMoveSpeedRealTilesPerSecond)
@@ -264,6 +296,48 @@ namespace ld51
 
                 foreach(Factory factory in this.factories)
                     updateFactory(factory);
+
+                // spawn items
+                if (this.tick >= this.nextSpawnTick)
+                {
+                    for (int y = 0; y < this.level.h; y++)
+                    {
+                        for (int x = 0; x < this.level.w; x++)
+                        {
+                            if (this.level.get(x, y)->tileId != Constants.spawner)
+                                continue;
+
+                            Point p = new Point(x, y);
+                            this.itemsByPos.TryGetValue(p, out Item blocker);
+                            if (blocker == null)
+                                addItem(p, new Item(new List<ItemColor>(){ItemColor.Red, ItemColor.Red, ItemColor.Red, ItemColor.Red}));
+                        }
+                    }
+
+                    this.nextSpawnTick = this.nextSpawnTick + Constants.updatesPerSecond * 10;
+                }
+
+                // trash + score items
+                for (int y = 0; y < this.level.h; y++)
+                {
+                    for (int x = 0; x < this.level.w; x++)
+                    {
+                        Tile* tile = this.level.get(x, y);
+                        if (tile->tileId != Constants.bin && tile->tileId != Constants.goal)
+                            continue;
+
+                        Point p = new Point(x, y);
+                        this.itemsByPos.TryGetValue(p, out Item item);
+
+                        if (item != null)
+                        {
+                            if (tile->tileId == Constants.goal)
+                                this.score++;
+
+                            removeItem(item);
+                        }
+                    }
+                }
 
                 ticksSinceLastItemUpdate = 0;
             }
@@ -460,7 +534,9 @@ namespace ld51
                     if (destinationTile->tileId != Constants.beltRight &&
                         destinationTile->tileId != Constants.beltDown &&
                         destinationTile->tileId != Constants.beltLeft &&
-                        destinationTile->tileId != Constants.beltUp)
+                        destinationTile->tileId != Constants.beltUp &&
+                        destinationTile->tileId != Constants.bin &&
+                        destinationTile->tileId != Constants.goal)
                     {
                         goto nextDir;
                     }
@@ -505,6 +581,9 @@ nextDir:
                     case Constants.beltUp:
                         movement = new Point(0, -1);
                         break;
+                    case Constants.spawner:
+                        movement = new Point(0, 1);
+                        break;
                 }
 
                 if (movement == Point.Zero)
@@ -520,7 +599,9 @@ nextDir:
                     destinationTile->tileId != Constants.beltDown &&
                     destinationTile->tileId != Constants.beltLeft &&
                     destinationTile->tileId != Constants.beltUp &&
-                    destinationTile->tileId != Constants.beltJunction)
+                    destinationTile->tileId != Constants.beltJunction &&
+                    destinationTile->tileId != Constants.bin &&
+                    destinationTile->tileId != Constants.goal)
                 {
                     return false;
                 }
