@@ -130,27 +130,41 @@ namespace ld51
                 renderTileAtPixel(renderScale, icon, pos + new Vector2(8, 8) * renderScale, Color.White);
             }
 
-            int toolTile = -1;
+            int toolTile1 = -1;
+            int toolTile2 = -1;
             switch (gameState.tool)
             {
                 case Tool.Belt:
-                    toolTile = Constants.beltTool;
+                    toolTile1 = Constants.beltTool;
                     break;
                 case Tool.BeltJunction:
-                    toolTile = Constants.beltJunctionTool;
+                    toolTile1 = Constants.beltJunctionTool;
                     break;
                 case Tool.Delete:
-                    toolTile = Constants.deleteTool;
+                    toolTile1 = Constants.deleteTool;
                     break;
                 case Tool.FactorySaw:
+                    toolTile1 = Constants.factoryTool;
+                    toolTile2 = Constants.factoryIconSaw;
+                    break;
                 case Tool.FactoryGlue:
+                    toolTile1 = Constants.factoryTool;
+                    toolTile2 = Constants.factoryIconGlue;
+                    break;
                 case Tool.FactoryPaintRed:
+                    toolTile1 = Constants.factoryTool;
+                    toolTile2 = Constants.factoryIconPaintRed;
+                    break;
                 case Tool.FactoryPaintGreen:
+                    toolTile1 = Constants.factoryTool;
+                    toolTile2 = Constants.factoryIconPaintGreen;
+                    break;
                 case Tool.FactoryPaintBlue:
-                    toolTile = Constants.factoryTool;
+                    toolTile1 = Constants.factoryTool;
+                    toolTile2 = Constants.factoryIconPaintBlue;
                     break;
             }
-            Util.ReleaseAssert(toolTile != -1);
+            Util.ReleaseAssert(toolTile1 != -1);
 
             float toolRot = 0;
             if (gameState.tool == Tool.Belt)
@@ -174,7 +188,14 @@ namespace ld51
 
             Point mousePos_ = Mouse.GetState().Position;
             Vector2 mousePos = new Vector2(mousePos_.X, mousePos_.Y);
-            renderTileAtPixel(renderScale, toolTile, mousePos, Color.White, toolRot);
+            renderTileAtPixel(renderScale, toolTile1, mousePos, Color.White, toolRot);
+            if (toolTile2 != -1)
+                renderTileAtPixel(renderScale, toolTile2, mousePos + new Vector2(10, 0) * renderScale, Color.White, toolRot);
+
+
+            Vector2 hudBottomPos = new Vector2(Game1.game.Window.ClientBounds.Width / 2 - Textures.hudBottom.Bounds.Width * renderScale / 2,
+                                               Game1.game.Window.ClientBounds.Height - Textures.hudBottom.Bounds.Height * renderScale);
+            spriteBatch.Draw(Textures.hudBottom, hudBottomPos, null, Color.White, 0f, new Vector2(0,0), new Vector2(renderScale, renderScale), SpriteEffects.None, 1);
 
             spriteBatch.End();
         }
