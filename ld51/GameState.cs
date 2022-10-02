@@ -384,26 +384,34 @@ namespace ld51
                 ticksSinceLastItemUpdate++;
             }
 
+            if (ticksSinceLastItemUpdate == 20)
+            {
+                foreach (Factory factory in this.factories)
+                    factorySuckInputs(factory);
+            }
+
             foreach (Item item in this.items)
                 item.visualUpdate(this);
         }
 
-        private void updateFactory(Factory factory)
+        private void factorySuckInputs(Factory factory)
         {
-            // suck up inputs
             for (int x = 0; x < Constants.factoryDimensions.X; x++)
             {
                 Point point = new Point(factory.topLeft.X + x, factory.topLeft.Y - 1);
                 FactoryBuffer factoryBuffer = factory.getInput(point);
 
                 itemsByPos.TryGetValue(point, out Item item);
-                if (item != null && factoryBuffer.items.Count < factoryBuffer.maxSize && item.lastTouchedTick == this.tick)
+                if (item != null && factoryBuffer.items.Count < factoryBuffer.maxSize)
                 {
                     this.removeItem(item);
                     factoryBuffer.items.Add(item);
                 }
             }
+        }
 
+        private void updateFactory(Factory factory)
+        {
             // craft
             switch (factory.type)
             {
