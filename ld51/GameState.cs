@@ -44,7 +44,13 @@ namespace ld51
         public Dictionary<Point, Factory> factoriesByPos = new Dictionary<Point, Factory>();
 
         public int score = 0;
-        public List<ItemColor> target = new List<ItemColor>() {ItemColor.Red, ItemColor.Red, ItemColor.Blue, ItemColor.Blue};
+        public List<ItemColor> target => targetsList.Count > targetIndex ? targetsList[targetIndex] : null;
+        public List<ItemColor> nextTarget => targetsList.Count > targetIndex + 1 ? targetsList[targetIndex + 1] : null;
+        public List<List<ItemColor>> targetsList;
+        public int targetIndex = 0;
+
+        public const int roundTicks = (int)Constants.updatesPerSecond * 60 * 1;
+        public int targetTicksRemaining = roundTicks;
 
         InputHandler inputHandler = new InputHandler();
         long tick = 0;
@@ -53,6 +59,15 @@ namespace ld51
         public GameState(Tilemap level)
         {
             this.level = level;
+
+            targetsList = new List<List<ItemColor>>()
+            {
+                new List<ItemColor>() {ItemColor.Blue,ItemColor.Blue,ItemColor.Blue,ItemColor.Blue},
+                new List<ItemColor>() {ItemColor.Red,ItemColor.Red},
+                new List<ItemColor>() {ItemColor.Red,ItemColor.Red,ItemColor.Blue,ItemColor.Blue},
+                new List<ItemColor>() {ItemColor.Green},
+                new List<ItemColor>() {ItemColor.Red,ItemColor.Green,ItemColor.Blue,ItemColor.Blue},
+            };
         }
 
         private bool isFactoryPart(Point p)
@@ -62,6 +77,13 @@ namespace ld51
 
         public void update(long gameTimeMs)
         {
+            targetTicksRemaining--;
+            if (targetTicksRemaining == 0)
+            {
+                targetTicksRemaining = roundTicks;
+                targetIndex++;
+            }
+
             // Console.WriteLine(gameTimeMs);
             inputHandler.update(gameTimeMs);
 
@@ -340,7 +362,7 @@ namespace ld51
 
                         if (item != null)
                         {
-                            if (tile->tileId == Constants.goal)
+                            if (tile->tileId == Constants.goal && this.target != null && item.parts.SequenceEqual(this.target))
                                 this.score++;
 
                             removeItem(item);
