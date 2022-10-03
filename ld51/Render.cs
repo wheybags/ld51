@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -29,10 +30,53 @@ namespace ld51
 
         private static void renderWinScreen(long ms, GraphicsDevice GraphicsDevice, GameState gameState)
         {
+            GraphicsDevice.Clear(new Color(90, 105, 136, 255));
             Vector2 winPos = new Vector2(Game1.game.Window.ClientBounds.Width / 2 - Textures.hudBottom.Bounds.Width * renderScale / 2, 0);
             spriteBatch.Draw(Textures.win, winPos, null, Color.White, 0f, new Vector2(0,0), new Vector2(renderScale, renderScale), SpriteEffects.None, 1);
 
             renderNumber(winPos + new Vector2(85, 10) * renderScale, gameState.score);
+
+            int[] hist = new int[10];
+
+            int max = gameState.onlineScores.Max();
+            int bucketSize = max / hist.Length;
+
+            foreach (int score in gameState.onlineScores)
+            {
+                if (score > 0)
+                    hist[(score-1)/bucketSize]++;
+            }
+
+            // Vector2 histTopLeft = winPos + new Vector2(0, 16) * renderScale;
+            // Vector2 histBottomRight = histTopLeft + new Vector2(64, 64) * renderScale;
+
+            Rectangle r = new Rectangle((int)winPos.X - 50*renderScale, (int)winPos.Y +64*renderScale, 256*renderScale, 128*renderScale);
+
+            spriteBatch.Draw(Textures.white, r, Color.White);
+
+            int countMax = hist.Max();
+            float s = (float)r.Height / (float)countMax;
+
+            int off = r.Width / hist.Length;
+            for (int i = 0; i < hist.Length; i++)
+            {
+                Point bl = new Point(r.Left + off * i + 1*renderScale, r.Bottom);
+                Point tr = new Point(r.Left + off * (i+1) -1*renderScale, (int)(r.Bottom - hist[i] * s));
+
+                Rectangle line = new Rectangle(bl.X, tr.Y, tr.X - bl.X, bl.Y - tr.Y);
+                spriteBatch.Draw(Textures.white, line, Color.Black);
+
+                int bucketMin = i * bucketSize + 1;
+                int bucketMax = (i+1) * bucketSize;
+                renderNumber(new Vector2(bl.X, bl.Y) + new Vector2(0, 10 * renderScale), bucketMin);
+            }
+
+
+            {
+                float ss = (float)r.Width / (float)max;
+                Rectangle line = new Rectangle((int)(r.Left + ss * gameState.score), r.Top, 1 * renderScale, r.Height);
+                spriteBatch.Draw(Textures.white, line, Color.Red);
+            }
         }
 
         private static void renderGame(long ms, GraphicsDevice GraphicsDevice, GameState gameState)

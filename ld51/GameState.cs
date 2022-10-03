@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection.Metadata;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ld51
 {
@@ -49,7 +53,8 @@ namespace ld51
         public List<List<ItemColor>> targetsList;
         public int targetIndex = 0;
 
-        public const int roundTicks = (int)Constants.updatesPerSecond * 60 * 1;
+        public int[] onlineScores = null;
+        public int personalBest = 0;
         public int targetTicksRemaining = roundTicks;
 
         public bool started = false;
@@ -80,6 +85,41 @@ namespace ld51
             return factoriesByPos.ContainsKey(p);
         }
 
+        public void onWin()
+        {
+            string user;
+
+            personalBest = score;
+            try
+            {
+                string json = File.ReadAllText(Constants.rootPath + "\\score.json");
+                JObject jObject = (JObject)JsonConvert.DeserializeObject(json);
+                user = jObject["user"].Value<string>();
+                personalBest = Math.Max(this.score, jObject["personalBest"].Value<int>());
+            }
+            catch
+            {
+                user = Guid.NewGuid().ToString();
+            }
+
+            JObject thing = new JObject();
+            thing["user"] = user;
+            thing["personalBest"] = personalBest;
+
+            File.WriteAllText(Constants.rootPath + "\\score.json", thing.ToString());
+
+            WebClient client = new WebClient();
+            try
+            {
+                using (Stream s = client.OpenRead("https://wheybags.com/cgi/ld51.py?action=submit&user=" + user + "&score=" + score))
+                {
+                    string manifestData = new StreamReader(s).ReadToEnd();
+                    this.onlineScores = JsonConvert.DeserializeObject<int[]>(manifestData);
+                }
+            }
+            catch {}
+        }
+
         public void update(long gameTimeMs)
         {
             inputHandler.update(gameTimeMs);
@@ -96,6 +136,9 @@ namespace ld51
             {
                 targetTicksRemaining = roundTicks;
                 targetIndex++;
+
+                if (target == null)
+                    onWin();
             }
 
             // Console.WriteLine(gameTimeMs);

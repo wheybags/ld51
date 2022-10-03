@@ -9,6 +9,7 @@ namespace ld51
         public static Texture2D hudBottom;
         public static Texture2D hudTop;
         public static Texture2D win;
+        public static Texture2D white;
 
         public static void loadTextures()
         {
@@ -16,6 +17,7 @@ namespace ld51
             hudBottom = loadTexture("gfx/hud-bottom.png");
             hudTop = loadTexture("gfx/hud-top.png");
             win = loadTexture("gfx/win.png");
+            white = loadTexture("gfx/white.png");
         }
 
         private static Texture2D loadTexture(string path) => Texture2D.FromFile(Game1.game.GraphicsDevice, Path.Combine(Constants.rootPath, path));
