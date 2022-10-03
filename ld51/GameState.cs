@@ -71,6 +71,8 @@ namespace ld51
                 new List<ItemColor>() {ItemColor.Green},
                 new List<ItemColor>() {ItemColor.Red,ItemColor.Green,ItemColor.Blue,ItemColor.Blue},
             };
+
+            this.viewpoint = new Vector2(Game1.game.Window.ClientBounds.Width, Game1.game.Window.ClientBounds.Height) / (Render.renderScale * Constants.tileSize) / 2 - new Vector2(this.level.w, this.level.h) / 2;
         }
 
         private bool isFactoryPart(Point p)
@@ -422,7 +424,6 @@ namespace ld51
                         Item input = factory.inputsL.items[factory.inputsL.items.Count - 1];
                         factory.inputsL.items.RemoveAt(factory.inputsL.items.Count - 1);
 
-                        Util.ReleaseAssert(input.parts.Count > 1 && input.parts.Count <= 4);
                         switch (input.parts.Count)
                         {
                             case 1:

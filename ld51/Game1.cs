@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ld51
 {
@@ -27,12 +28,22 @@ namespace ld51
 
         protected override void Initialize()
         {
-            base.Initialize();
-
             IsMouseVisible = true;
-            graphics.PreferredBackBufferWidth = 1920;
-            graphics.PreferredBackBufferHeight = 1080;
+            if (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height >= 2160)
+            {
+                graphics.PreferredBackBufferWidth = 1920;
+                graphics.PreferredBackBufferHeight = 1080;
+                Render.renderScale = 3;
+            }
+            else
+            {
+                graphics.PreferredBackBufferWidth = 1280;
+                graphics.PreferredBackBufferHeight = 720;
+                Render.renderScale = 2;
+            }
             graphics.ApplyChanges();
+
+            base.Initialize();
         }
 
         protected override void LoadContent()
