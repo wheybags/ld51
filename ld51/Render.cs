@@ -44,7 +44,7 @@ namespace ld51
             foreach (int score in gameState.onlineScores)
             {
                 if (score > 0)
-                    hist[(score-1)/bucketSize]++;
+                    hist[Math.Min(score/bucketSize, hist.Length-1)]++;
             }
 
             // Vector2 histTopLeft = winPos + new Vector2(0, 16) * renderScale;
