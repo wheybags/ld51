@@ -82,6 +82,14 @@ namespace ld51
 
         public void update(long gameTimeMs)
         {
+            inputHandler.update(gameTimeMs);
+
+            if (this.inputHandler.downThisFrame(Input.Restart))
+                Game1.game.gameState = new GameState(new Tilemap("level/level.tmx"));
+
+            if (target == null)
+                return;
+
             targetTicksRemaining = Math.Max(targetTicksRemaining - 1, 0);
 
             if (started && targetTicksRemaining == 0)
@@ -91,7 +99,6 @@ namespace ld51
             }
 
             // Console.WriteLine(gameTimeMs);
-            inputHandler.update(gameTimeMs);
 
             Vector2 movement = new Vector2();
             if (inputHandler.currentState.getInput(Input.Left))

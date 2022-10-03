@@ -19,6 +19,24 @@ namespace ld51
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointWrap);
 
+            if (gameState.target != null)
+                renderGame(ms, GraphicsDevice, gameState);
+            else
+                renderWinScreen(ms, GraphicsDevice, gameState);
+
+            spriteBatch.End();
+        }
+
+        private static void renderWinScreen(long ms, GraphicsDevice GraphicsDevice, GameState gameState)
+        {
+            Vector2 winPos = new Vector2(Game1.game.Window.ClientBounds.Width / 2 - Textures.hudBottom.Bounds.Width * renderScale / 2, 0);
+            spriteBatch.Draw(Textures.win, winPos, null, Color.White, 0f, new Vector2(0,0), new Vector2(renderScale, renderScale), SpriteEffects.None, 1);
+
+            renderNumber(winPos + new Vector2(85, 10) * renderScale, gameState.score);
+        }
+
+        private static void renderGame(long ms, GraphicsDevice GraphicsDevice, GameState gameState)
+        {
             Point selectedPoint = getSelectedPoint(gameState);
 
             for (int y = 0; y < gameState.level.h; y++)
@@ -190,7 +208,7 @@ namespace ld51
                 float secondsRemaining =(((float)gameState.targetTicksRemaining) / ((float)Constants.updatesPerSecond));
                 float fractPart = secondsRemaining - (long)secondsRemaining;
 
-                if (gameState.target != null && !gameState.started || secondsRemaining < 55 || fractPart > 0.5)
+                if (gameState.target != null && (!gameState.started || secondsRemaining < 55 || fractPart > 0.5))
                     renderItem(hudTopPos + new Vector2(32, 11) * renderScale, gameState.target);
 
                 renderNumber(hudTopPos + new Vector2(85, 10) * renderScale, gameState.score);
@@ -209,8 +227,6 @@ namespace ld51
                 spriteBatch.Draw(Textures.hudBottom, hudBottomPos, null, Color.White, 0f, new Vector2(0,0), new Vector2(renderScale, renderScale), SpriteEffects.None, 1);
             }
 
-
-            spriteBatch.End();
         }
 
         private static void renderNumber(Vector2 pos, int number)

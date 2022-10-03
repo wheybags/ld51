@@ -23,6 +23,8 @@ namespace ld51
         SelectFactoryPaintGreen,
         SelectFactoryPaintBlue,
 
+        Restart,
+
         MAX_INPUT
     }
 
@@ -155,6 +157,8 @@ namespace ld51
                         return keyboard.IsKeyDown(Keys.D7);
                     case Input.SelectFactoryPaintBlue:
                         return keyboard.IsKeyDown(Keys.D8);
+                    case Input.Restart:
+                        return keyboard.IsKeyDown(Keys.R);
                 }
 
                 Util.ReleaseAssert(false);

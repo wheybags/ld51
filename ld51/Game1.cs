@@ -11,7 +11,7 @@ namespace ld51
 
         public static Game1 game;
 
-        GameState gameState;
+        public GameState gameState;
 
         [DllImport("kernel32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
