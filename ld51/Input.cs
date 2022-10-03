@@ -158,7 +158,7 @@ namespace ld51
                     case Input.SelectFactoryPaintBlue:
                         return keyboard.IsKeyDown(Keys.D8);
                     case Input.Restart:
-                        return keyboard.IsKeyDown(Keys.R);
+                        return keyboard.IsKeyDown(Keys.P);
                 }
 
                 Util.ReleaseAssert(false);

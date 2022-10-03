@@ -55,6 +55,7 @@ namespace ld51
 
         public int[] onlineScores = null;
         public int personalBest = 0;
+        public static int roundTicks = (int)Constants.updatesPerSecond * 60 * 1;
         public int targetTicksRemaining = roundTicks;
 
         public bool started = false;
